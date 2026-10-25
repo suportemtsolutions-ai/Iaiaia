@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rebeldes 1B — Sala do Futuro no automático</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070e;
+  --surface: #0e0e1c;
+  --card: #13131f;
+  --card-hover: #191928;
+  --border: #1f1f35;
+  --accent: #e63946;
+  --accent-dim: #b52d39;
+  --accent-glow: rgba(230,57,70,0.18);
+  --purple: #7c5ce0;
+  --purple-dim: #5a42a8;
+  --text: #eeeef5;
+  --text-muted: #7878a0;
+  --text-faint: #3a3a5a;
+  --success: #2ed573;
+  --success-dim: rgba(46,213,115,0.12);
+  --warn: #ffa502;
+  --warn-dim: rgba(255,165,2,0.12);
+  --error: #ff4757;
+  --error-dim: rgba(255,71,87,0.12);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  overflow-x: hidden;
+}
+
+/* ─── GRID NOISE ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(230,57,70,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 90%, rgba(124,92,224,0.06) 0%, transparent 55%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.screen {
+  position: relative;
+  z-index: 1;
+  display: none;
+  min-height: 100dvh;
+}
+.screen.active { display: flex; }
+
+/* ─── LOGIN ─── */
+#screen-login {
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 40px 36px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.brand-icon {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(230,57,70,0.5));
+}
+
+.brand h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.field input, .field select {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.field select { cursor: pointer; }
+
+.field-row { display: flex; gap: 10px; }
+.field-row .field { flex: 1; }
+
+.btn-main {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  letter-spacing: 0.2px;
+}
+.btn-main:hover { background: var(--accent-dim); box-shadow: 0 4px 24px rgba(230,57,70,0.35); }
+.btn-main:active { transform: scale(0.98); }
+.btn-main:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.login-footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+.login-footer a { color: var(--text-muted); text-decoration: none; }
+
+.saved-accounts {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.saved-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.saved-list { display: flex; flex-direction: column; gap: 6px; }
+.saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.saved-item:hover { border-color: var(--accent); }
+.saved-item span { font-size: 13px; color: var(--text); }
+.saved-item button {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.saved-item button:hover { color: var(--accent); }
+
+.error-msg {
+  background: var(--error-dim);
+  border: 1px solid rgba(255,71,87,0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--error);
+  margin-bottom: 14px;
+  display: none;
+}
+
+/* ─── DASHBOARD ─── */
+#screen-dash {
+  flex-direction: column;
+  padding-bottom: 100px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(7,7,14,0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.topbar-brand span { font-size: 22px; }
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-ra {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.btn-logout {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
+.dash-inner { padding: 24px 20px 0; max-width: 700px; margin: 0 auto; width: 100%; }
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-select-all {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-select-all:hover { border-color: var(--accent); color: var(--accent); }
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.platform-card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  user-select: none;
+  position: relative;
+}
+.platform-card:hover { background: var(--card-hover); border-color: #2e2e50; }
+.platform-card.selected {
+  border-color: var(--accent);
+  background: rgba(230,57,70,0.06);
+  box-shadow: 0 0 0 1px rgba(230,57,70,0.1) inset;
+}
+
+.platform-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transition: all 0.2s;
+}
+.platform-card.selected .platform-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.platform-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+.platform-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  padding-right: 24px;
+}
+.platform-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  background: rgba(7,7,14,0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 10;
+}
+.bottom-count { font-size: 13px; color: var(--text-muted); }
+.bottom-count strong { color: var(--text); }
+.btn-run {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn-run:hover { background: var(--accent-dim); box-shadow: 0 4px 20px rgba(230,57,70,0.4); }
+.btn-run:active { transform: scale(0.97); }
+.btn-run:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ─── RUNNING ─── */
+#screen-running {
+  flex-direction: column;
+}
+
+.running-inner { padding: 0 20px; max-width: 600px; margin: 0 auto; width: 100%; flex: 1; }
+
+.running-header {
+  padding: 28px 0 20px;
+  text-align: center;
+}
+.running-header h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+.running-header p { font-size: 14px; color: var(--text-muted); }
+
+.overall-progress {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.overall-num {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: center;
+  line-height: 1;
+}
+.overall-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.overall-bar-wrap { flex: 1; }
+.overall-bar-bg {
+  background: var(--border);
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+.overall-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.overall-bar-text { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: right; }
+
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+
+.task-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color 0.3s;
+}
+.task-item.running { border-color: rgba(124,92,224,0.4); }
+.task-item.done { border-color: rgba(46,213,115,0.3); background: var(--success-dim); }
+.task-item.error { border-color: rgba(255,71,87,0.3); background: var(--error-dim); }
+
+.task-icon { font-size: 22px; flex-shrink: 0; }
+.task-info { flex: 1; min-width: 0; }
+.task-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.task-status { font-size: 12px; color: var(--text-muted); }
+.task-item.done .task-status { color: var(--success); }
+.task-item.error .task-status { color: var(--error); }
+
+.task-badge {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--purple);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── DONE ─── */
+#screen-done {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+}
+.done-inner { max-width: 440px; width: 100%; }
+
+.done-icon { font-size: 64px; margin-bottom: 16px; display: block; }
+.done-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.done-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
+
+.done-stats {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.done-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  flex: 1;
+  max-width: 130px;
+}
+.done-stat-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+.done-stat-label { font-size: 12px; color: var(--text-muted); }
+.done-stat.ok .done-stat-num { color: var(--success); }
+.done-stat.fail .done-stat-num { color: var(--error); }
+
+.done-list {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.done-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.done-list-item:last-child { border-bottom: none; }
+.done-list-icon { font-size: 18px; flex-shrink: 0; }
+.done-list-name { flex: 1; font-weight: 500; }
+.done-list-status { font-size: 16px; }
+
+.btn-again {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.2s;
+}
+.btn-again:hover { background: var(--accent-dim); }
+
+.btn-back {
+  width: 100%;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-back:hover { border-color: var(--text-muted); color: var(--text); }
+
+/* ─── DEMO BADGE ─── */
+.demo-badge {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  background: rgba(255,165,2,0.12);
+  border: 1px solid rgba(255,165,2,0.35);
+  color: var(--warn);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 100;
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .login-box { padding: 32px 24px; }
+  .platform-grid { grid-template-columns: 1fr 1fr; }
+  .done-stats { gap: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="demo-badge" id="demoBadge">Modo Demo</div>
+
+<!-- ─── LOGIN ─── -->
+<div class="screen active" id="screen-login">
+  <div class="login-box">
+    <div class="brand">
+      <span class="brand-icon">🔥</span>
+      <h1>Rebeldes 1B</h1>
+      <p>Sala do Futuro no automático — clique em Entrar para testar</p>
+    </div>
+
+    <div class="error-msg" id="loginError"></div>
+
+    <div class="field-row">
+      <div class="field" style="flex:2">
+        <label>RA</label>
+        <input type="text" id="raInput" placeholder="123456789" maxlength="9" inputmode="numeric">
+      </div>
+      <div class="field" style="flex:1">
+        <label>Dígito</label>
+        <input type="text" id="digitoInput" placeholder="0" maxlength="1" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>UF</label>
+      <select id="ufInput">
+        <option value="SP" selected>SP — São Paulo</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="senhaInput" placeholder="••••••••">
+    </div>
+
+    <button class="btn-main" id="btnLogin" onclick="handleLogin()">Entrar</button>
+
+    <div id="savedSection" class="saved-accounts" style="display:none">
+      <div class="saved-title">Contas salvas</div>
+      <div class="saved-list" id="savedList"></div>
+    </div>
+
+    <div class="login-footer">
+      Rebeldes 1B — Turma invencível 🏴
+    </div>
+  </div>
+</div>
+
+<!-- ─── DASHBOARD ─── -->
+<div class="screen" id="screen-dash">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span>🔥</span> Rebeldes 1B
+    </div>
+    <div class="topbar-user">
+      <span class="topbar-ra" id="topbarRa">RA: —</span>
+      <button class="btn-logout" onclick="handleLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="dash-inner">
+    <div class="section-title">
+      Plataformas
+      <button class="btn-select-all" onclick="toggleSelectAll()">Selecionar tudo</button>
+    </div>
+    <div class="platform-grid" id="platformGrid"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="bottom-count"><strong id="selectedCount">0</strong> selecionadas</div>
+    <button class="btn-run" id="btnRun" onclick="handleRun()" disabled>▶ Executar</button>
+  </div>
+</div>
+
+<!-- ─── RUNNING ─── -->
+<div class="screen" id="screen-running">
+  <div style="padding:18px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
+    <span style="font-size:20px">🔥</span>
+    <span style="font-weight:800; font-size:16px;">Rebeldes 1B</span>
+  </div>
+  <div class="running-inner">
+    <div class="running-header">
+      <h2>Executando plataformas</h2>
+      <p id="runningSubtitle">Aguarde, isso pode levar alguns segundos…</p>
+    </div>
+    <div class="overall-progress">
+      <div>
+        <div class="overall-num" id="doneNum">0</div>
+        <div class="overall-label">concluídas</div>
+      </div>
+      <div class="overall-bar-wrap">
+        <div class="overall-bar-bg">
+          <div class="overall-bar-fill" id="overallBar"></div>
+        </div>
+        <div class="overall-bar-text" id="barText">0 / 0</div>
+      </div>
+    </div>
+    <div class="task-list" id="taskList"></div>
+  </div>
+</div>
+
+<!-- ─── DONE ─── */
+<div class="screen" id="screen-done">
+  <div class="done-inner">
+    <span class="done-icon" id="doneIcon">🎉</span>
+    <h2 class="done-title" id="doneTitle">Tudo certo!</h2>
+    <p class="done-sub" id="doneSub">Tarefas enviadas com sucesso.</p>
+    <div class="done-stats">
+      <div class="done-stat ok">
+        <div class="done-stat-num" id="statOk">0</div>
+        <div class="done-stat-label">Concluídas</div>
+      </div>
+      <div class="done-stat fail">
+        <div class="done-stat-num" id="statFail">0</div>
+        <div class="done-stat-label">Com erro</div>
+      </div>
+    </div>
+    <div class="done-list" id="doneList"></div>
+    <button class="btn-again" onclick="handleAgain()">🔄 Executar novamente</button>
+    <button class="btn-back" onclick="handleBackDash()">← Voltar ao painel</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const DEMO_MODE = true; // false = conecta no backend real
+const API_BASE  = 'https://SEU-BACKEND.com'; // endpoint quando DEMO_MODE = false
+
+// ─── PLATAFORMAS ──────────────────────────────────────────────────────────────
+const PLATFORMS = [
+  { id:'tarefasp',   icon:'📚', name:'TarefaSP',         desc:'Resolve atividades automáticas da Sala do Futuro',  apiKey:'tarefasp'  },
+  { id:'redacao',    icon:'✏️',  name:'Redação Paulista',  desc:'Completa e envia a redação no padrão SP',           apiKey:'redacao'   },
+  { id:'speak',      icon:'🎙️', name:'Speak',             desc:'Passa exercícios de speaking e listening',          apiKey:'speak'     },
+  { id:'khan',       icon:'🎯', name:'Khan Academy',      desc:'Responde exercícios de matemática e ciências',      apiKey:'khan'      },
+  { id:'leiasp',     icon:'📖', name:'LeiaSP+',           desc:'Conclui leituras e registros da plataforma',        apiKey:'leiasp'    },
+  { id:'alura',      icon:'💻', name:'Alura',             desc:'Avança cursos técnicos e marca aulas como vistas',  apiKey:'alura'     },
+  { id:'matific',    icon:'🔢', name:'Matific',           desc:'Completa jogos e exercícios de matemática',         apiKey:'matific'   },
+  { id:'openengl',   icon:'🌍', name:'Open English',      desc:'Finaliza missões e lições de inglês',               apiKey:'openenglish'},
+  { id:'expansao',   icon:'🌙', name:'Expansão Noturna',  desc:'Executa atividades do programa noturno',            apiKey:'expansao'  },
+  { id:'preparasp',  icon:'🏆', name:'PreparaSP',         desc:'Responde simulados e exercícios do vestibular',     apiKey:'preparasp' },
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentRA = '', currentSenha = '', selectedIds = new Set(), runResults = [];
+
+// ─── SAVED ACCOUNTS ───────────────────────────────────────────────────────────
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('rb1b_accounts') || '[]'); } catch { return []; }
+}
+function setSaved(arr) {
+  try { localStorage.setItem('rb1b_accounts', JSON.stringify(arr)); } catch {}
+}
+function saveAccount(ra, digito) {
+  const arr = getSaved().filter(a => a.ra !== ra);
+  arr.unshift({ ra, digito, ts: Date.now() });
+  setSaved(arr.slice(0, 5));
+}
+function removeAccount(ra) {
+  setSaved(getSaved().filter(a => a.ra !== ra));
+  renderSaved();
+}
+function renderSaved() {
+  const arr = getSaved();
+  const sec = document.getElementById('savedSection');
+  const list = document.getElementById('savedList');
+  if (!arr.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  list.innerHTML = arr.map(a => `
+    <div class="saved-item" onclick="loadAccount('${a.ra}','${a.digito}')">
+      <span>RA ${a.ra}-${a.digito}</span>
+      <button onclick="event.stopPropagation();removeAccount('${a.ra}')">✕</button>
+    </div>`).join('');
+}
+function loadAccount(ra, digito) {
+  document.getElementById('raInput').value = ra;
+  document.getElementById('digitoInput').value = digito;
+  document.getElementById('senhaInput').focus();
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function handleLogin() {
+  const ra     = document.getElementById('raInput').value.trim();
+  const digito = document.getElementById('digitoInput').value.trim();
+  const senha  = document.getElementById('senhaInput').value;
+  const errEl  = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  const demoRa  = ra     || '000000000';
+  const demoDig = digito || '0';
+  currentRA    = demoRa + '-' + demoDig;
+  currentSenha = senha || 'demo';
+  if (ra && digito) saveAccount(ra, digito);
+  showDash();
+}
+function showError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function showDash() {
+  setScreen('dash');
+  document.getElementById('topbarRa').textContent = `RA: ${currentRA}`;
+  renderPlatforms();
+}
+function renderPlatforms() {
+  const grid = document.getElementById('platformGrid');
+  grid.innerHTML = PLATFORMS.map(p => `
+    <div class="platform-card ${selectedIds.has(p.id)?'selected':''}"
+         id="card-${p.id}" onclick="togglePlatform('${p.id}')">
+      <div class="platform-check">${selectedIds.has(p.id)?'✓':''}</div>
+      <span class="platform-icon">${p.icon}</span>
+      <div class="platform-name">${p.name}</div>
+      <div class="platform-desc">${p.desc}</div>
+    </div>`).join('');
+  updateCount();
+}
+function togglePlatform(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  const card = document.getElementById(`card-${id}`);
+  const sel  = selectedIds.has(id);
+  card.classList.toggle('selected', sel);
+  card.querySelector('.platform-check').textContent = sel ? '✓' : '';
+  updateCount();
+}
+function toggleSelectAll() {
+  const allSelected = selectedIds.size === PLATFORMS.length;
+  selectedIds.clear();
+  if (!allSelected) PLATFORMS.forEach(p => selectedIds.add(p.id));
+  renderPlatforms();
+}
+function updateCount() {
+  const n = selectedIds.size;
+  document.getElementById('selectedCount').textContent = n;
+  document.getElementById('btnRun').disabled = n === 0;
+}
+function handleLogout() {
+  currentRA = ''; currentSenha = ''; selectedIds.clear();
+  setScreen('login');
+  document.getElementById('demoBadge').style.display = 'none';
+}
+
+// ─── RUNNING ──────────────────────────────────────────────────────────────────
+async function handleRun() {
+  const toRun = PLATFORMS.filter(p => selectedIds.has(p.id));
+  setScreen('running');
+
+  // build task items
+  const taskList = document.getElementById('taskList');
+  taskList.innerHTML = toRun.map(p => `
+    <div class="task-item" id="task-${p.id}">
+      <span class="task-icon">${p.icon}</span>
+      <div class="task-info">
+        <div class="task-name">${p.name}</div>
+        <div class="task-status">Aguardando…</div>
+      </div>
+      <div class="task-badge">⏳</div>
+    </div>`).join('');
+
+  document.getElementById('doneNum').textContent = '0';
+  document.getElementById('overallBar').style.width = '0%';
+  document.getElementById('barText').textContent = `0 / ${toRun.length}`;
+  runResults = [];
+
+  let done = 0;
+
+  for (const p of toRun) {
+    const item = document.getElementById(`task-${p.id}`);
+    const badge = item.querySelector('.task-badge');
+    const status = item.querySelector('.task-status');
+
+    item.classList.add('running');
+    badge.innerHTML = '<div class="spinner"></div>';
+    status.textContent = 'Executando…';
+
+    let result;
+    if (DEMO_MODE) {
+      result = await demoRun(p);
+    } else {
+      result = await apiRun(p);
+    }
+
+    done++;
+    item.classList.remove('running');
+    if (result.ok) {
+      item.classList.add('done');
+      badge.textContent = '✅';
+      status.textContent = result.msg || 'Concluída com sucesso';
+    } else {
+      item.classList.add('error');
+      badge.textContent = '❌';
+      status.textContent = result.msg || 'Erro ao executar';
+    }
+    runResults.push({ ...p, ...result });
+
+    const pct = Math.round((done / toRun.length) * 100);
+    document.getElementById('doneNum').textContent = done;
+    document.getElementById('overallBar').style.width = pct + '%';
+    document.getElementById('barText').textContent = `${done} / ${toRun.length}`;
+  }
+
+  document.getElementById('runningSubtitle').textContent = 'Concluído.';
+  await sleep(700);
+  showDone();
+}
+
+async function demoRun(p) {
+  const ms = 800 + Math.random() * 2200;
+  await sleep(ms);
+  const fail = Math.random() < 0.08; // 8% chance de erro realista
+  return fail
+    ? { ok: false, msg: 'Plataforma fora do ar' }
+    : { ok: true,  msg: 'Atividades enviadas com sucesso' };
+}
+
+async function apiRun(p) {
+  try {
+    const res = await fetch(`${API_BASE}/api/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ra: currentRA, senha: currentSenha, platform: p.apiKey })
+    });
+    const data = await res.json();
+    return { ok: res.ok && data.ok, msg: data.message || '' };
+  } catch { return { ok: false, msg: 'Falha de conexão' }; }
+}
+
+// ─── DONE ────────────────────────────────────────────────────────────────────
+function showDone() {
+  setScreen('done');
+  const ok   = runResults.filter(r => r.ok).length;
+  const fail = runResults.filter(r => !r.ok).length;
+  document.getElementById('statOk').textContent   = ok;
+  document.getElementById('statFail').textContent = fail;
+
+  if (fail === 0) {
+    document.getElementById('doneIcon').textContent  = '🎉';
+    document.getElementById('doneTitle').textContent = 'Tudo certo!';
+    document.getElementById('doneSub').textContent   = `${ok} plataforma${ok>1?'s':''} executada${ok>1?'s':''} com sucesso.`;
+  } else if (ok === 0) {
+    document.getElementById('doneIcon').textContent  = '😤';
+    document.getElementById('doneTitle').textContent = 'Algo deu errado';
+    document.getElementById('doneSub').textContent   = 'Nenhuma plataforma respondeu. Tente novamente.';
+  } else {
+    document.getElementById('doneIcon').textContent  = '⚠️';
+    document.getElementById('doneTitle').textContent = 'Quase lá!';
+    document.getElementById('doneSub').textContent   = `${ok} ok, ${fail} com erro.`;
+  }
+
+  document.getElementById('doneList').innerHTML = runResults.map(r => `
+    <div class="done-list-item">
+      <span class="done-list-icon">${r.icon}</span>
+      <span class="done-list-name">${r.name}</span>
+      <span class="done-list-status">${r.ok ? '✅' : '❌'}</span>
+    </div>`).join('');
+}
+
+function handleAgain() {
+  const toRun = new Set(runResults.map(r => r.id));
+  selectedIds = toRun;
+  handleRun();
+}
+function handleBackDash() { showDash(); }
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function setScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const target = document.getElementById(`screen-${name}`);
+  target.classList.add('active');
+  target.style.display = 'flex';
+  try { window.scrollTo(0, 0); } catch(e) {}
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── ENTER KEY ───────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('screen-login').classList.contains('active'))
+    handleLogin();
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderSaved();
+</script>
+</body>
+</html>
